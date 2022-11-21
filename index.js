@@ -25,12 +25,27 @@ async function run(){
     const bookingsCollection = client.db('doctors-portal').collection('bookings');
 
     app.get('/bookingoptions', async(req, res) => {
-    const query = {};
-    const bookingOpions = await apointmentOpstionCollection.find(query).toArray()
-    res.send(bookingOpions)
+        const date = req.query.date;
+        const query = {};
+        const bookingOpions = await apointmentOpstionCollection.find(query).toArray()
+
+        const bookingQuery = {apointmentData: date}
+        const alreadtBooked = await bookingsCollection.find(bookingQuery).toArray();
+        bookingOpions.forEach( option => {
+            const optionsBooked = alreadtBooked.filter(book => book.treatment === option.name);
+            const bookSlot = optionsBooked.map(book => book.slot);
+            const remainingSlot = option.slots.filter(slot => !bookSlot.includes(slot));
+            option.slots = remainingSlot
+        })
+        res.send(bookingOpions)
     })
 
-
+    app.get('/bookings', async(req, res) => {
+        const email = req.query.email;
+        const query = {email: email};
+        const bookings = await bookingsCollection.find(query).toArray()
+        res.send(bookings)
+    })
     app.post('/booking', async(req, res)=> {
         const booking = req.body;
         const result = await bookingsCollection.insertOne(booking);
