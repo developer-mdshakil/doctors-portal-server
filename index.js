@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-require ('dotenv').config()
+const jwt = require('jsonwebtoken');
+require ('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -23,6 +24,13 @@ async function run(){
     try{
     const apointmentOpstionCollection = client.db('doctors-portal').collection('apointmentoption')
     const bookingsCollection = client.db('doctors-portal').collection('bookings');
+    const usersCollection = client.db('doctors-portal').collection('users');
+
+    app.post('/users', async(req, res) => {
+        const user = req.body;
+        const result = await usersCollection.insertOne(user);
+        res.send(result);
+    })
 
     app.get('/bookingoptions', async(req, res) => {
         const date = req.query.date;
@@ -52,8 +60,7 @@ async function run(){
         res.send(result);
         
     })
-
-
+    
     }
     finally{
 
