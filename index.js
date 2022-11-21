@@ -32,6 +32,17 @@ async function run(){
         res.send(result);
     })
 
+    app.get('/jwt', async(req, res)=> {
+        const email = req.query.email;
+        const query = {email: email};
+        const user = await usersCollection.findOne(query);
+        if(user){
+            const token = jwt.sign({email}, process.env.ACCESS_TOKEN, {expiresIn: '1h'});
+            return res.send({Access_token: token})
+        }
+        res.status(403).send({access: 'token'})
+    })
+
     app.get('/bookingoptions', async(req, res) => {
         const date = req.query.date;
         const query = {};
