@@ -77,14 +77,25 @@ async function run(){
         res.send(result);
         
     })
-
+    app.get('/users/admin/:email', async(req, res)=> {
+        const email = req.params.email;
+        const query = { email };
+        const user = await usersCollection.findOne(query);
+        res.send({ isAdmin: user?.role === 'admin'})
+    })
     app.get('/users', async(req, res)=> {
         const query = {};
         const users = await usersCollection.find(query).toArray();
         res.send(users)
     })
 
-    app.put('/users/admin/:id', async(req, res)=> {
+    app.put('/users/admin/:id', verifyJWT, async(req, res)=> {
+        const decodedEmail = req.decoded.email;
+        const query = {email: decodedEmail};
+        const user = await usersCollection.findOne(query);
+        if(user?.role !== 'admin'){
+            return res.status(403).send({message: 'forbidend access'})
+        }
         const id = req.params.id;
         const filter = {_id: ObjectId(id)};
         const options = { upsert: true };
