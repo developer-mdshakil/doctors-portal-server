@@ -60,6 +60,12 @@ async function run(){
         res.send(bookingOpions)
     })
 
+    app.get('/specialty', async(req, res)=> {
+        const query = {};
+        const specialities = await apointmentOpstionCollection.find(query).project({name: 1}).toArray();
+        res.send(specialities)
+    })
+
     app.get('/bookings', verifyJWT, async(req, res) => {
         const email = req.query.email;
         const decodedEmail = req.decoded.email;
