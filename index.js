@@ -42,7 +42,18 @@ async function run(){
     const apointmentOpstionCollection = client.db('doctors-portal').collection('apointmentoption')
     const bookingsCollection = client.db('doctors-portal').collection('bookings');
     const usersCollection = client.db('doctors-portal').collection('users');
+    const doctorsCollection = client.db('doctors-portal').collection('doctors');
 
+    app.get('/jwt', async(req, res)=> {
+        const email = req.query.email;
+        const query = {email: email};
+        const user = await usersCollection.findOne(query);
+        if(user){
+            const token = jwt.sign({email}, process.env.ACCESS_TOKEN, {expiresIn: '1h'});
+            return res.send({Access_token: token})
+        }
+        res.status(403).send({access: ''})
+    })
     
     app.get('/bookingoptions', async(req, res) => {
         const date = req.query.date;
@@ -120,17 +131,18 @@ async function run(){
         res.send(result);
     })
 
-    app.get('/jwt', async(req, res)=> {
-        const email = req.query.email;
-        const query = {email: email};
-        const user = await usersCollection.findOne(query);
-        if(user){
-            const token = jwt.sign({email}, process.env.ACCESS_TOKEN, {expiresIn: '1h'});
-            return res.send({Access_token: token})
-        }
-        res.status(403).send({access: ''})
+    app.get('/doctors', async(req, res)=> {
+        const query = {};
+        const doctors = await doctorsCollection.find(query).toArray();
+        res.send(doctors)
     })
-    
+
+    app.post('/doctors', async(req, res)=> {
+        const doctor = req.body;
+        const result = await doctorsCollection.insertOne(doctor);
+        res.send(result)
+    })
+        
     }
     finally{
 
